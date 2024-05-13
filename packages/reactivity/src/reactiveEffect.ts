@@ -14,6 +14,10 @@ import {
 // Conceptually, it's easier to think of a dependency as a Dep class
 // which maintains a Set of subscribers, but we simply store them as
 // raw Maps to reduce memory overhead.
+//存储｛target->key->dep｝连接的主要WeakMap。   
+//从概念上讲，更容易将依赖项视为Dep类   
+//它维护一组订阅者，但我们只是将它们存储为    
+//原始映射以减少内存开销。    
 type KeyToDepMap = Map<any, Dep>
 const targetMap = new WeakMap<object, KeyToDepMap>()
 
@@ -27,17 +31,22 @@ export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '')
  * which records all effects that depend on the reactive property.
  *
  * @param target - Object holding the reactive property.
- * @param type - Defines the type of access to the reactive property.
- * @param key - Identifier of the reactive property to track.
+ * @param type - Defines the type of access to the reactive property. 依赖收集的属性类型
+ * @param key - Identifier of the reactive property to track. 依赖手机的标识符
  */
 export function track(target: object, type: TrackOpTypes, key: unknown) {
+  // 只有在 shouldTrack === true 并且 activeEffect 为真的情况下才收集依赖
   if (shouldTrack && activeEffect) {
+    // 获取目标对象的 depMap
     let depsMap = targetMap.get(target)
     if (!depsMap) {
+      // 不存在（首次收集依赖）情况：创建在 targetMap上以 target 为键创建一个空的 depMap
       targetMap.set(target, (depsMap = new Map()))
     }
+    // 获取键对应的 dep
     let dep = depsMap.get(key)
     if (!dep) {
+      // dep不存在：创建一个 dep 并将其存储在 depsMap 中
       depsMap.set(key, (dep = createDep(() => depsMap!.delete(key))))
     }
     trackEffect(

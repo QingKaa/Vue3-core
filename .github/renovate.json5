@@ -31,11 +31,6 @@
       matchPackageNames: ['vite', 'terser'],
       matchPackagePrefixes: ['rollup', 'esbuild', '@rollup', '@vitejs'],
     },
-    {
-      groupName: 'lint',
-      matchPackageNames: ['simple-git-hooks', 'lint-staged'],
-      matchPackagePrefixes: ['@typescript-eslint', 'eslint', 'prettier'],
-    },
   ],
   ignoreDeps: [
     'vue',

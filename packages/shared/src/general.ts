@@ -64,6 +64,12 @@ export const objectToString = Object.prototype.toString
 export const toTypeString = (value: unknown): string =>
   objectToString.call(value)
 
+
+/**
+ * toRawType('foo') => 'String'
+ * @param value 
+ * @returns 
+ */
 export const toRawType = (value: unknown): string => {
   // extract "RawType" from strings like "[object RawType]"
   return toTypeString(value).slice(8, -1)
@@ -72,6 +78,11 @@ export const toRawType = (value: unknown): string => {
 export const isPlainObject = (val: unknown): val is object =>
   toTypeString(val) === '[object Object]'
 
+/**
+ * 是否为整数键
+ * @param key 
+ * @returns 
+ */
 export const isIntegerKey = (key: unknown) =>
   isString(key) &&
   key !== 'NaN' &&

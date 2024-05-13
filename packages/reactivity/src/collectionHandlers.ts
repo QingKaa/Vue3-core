@@ -21,6 +21,14 @@ const toShallow = <T extends unknown>(value: T): T => value
 const getProto = <T extends CollectionTypes>(v: T): any =>
   Reflect.getPrototypeOf(v)
 
+/**
+ * Map， WeakMap 对象的Getter操作
+ * @param target 目标对象
+ * @param key getter的属性键
+ * @param isReadonly 是否只读
+ * @param isShallow 是否浅层响应
+ * @returns 
+ */
 function get(
   target: MapTypes,
   key: unknown,
@@ -29,20 +37,31 @@ function get(
 ) {
   // #1772: readonly(reactive(Map)) should return readonly + reactive version
   // of the value
+  // 获取原始属性的值
   target = (target as any)[ReactiveFlags.RAW]
+  // 目标对象转换成原始值：判断__v_raw属性是否存在，存在则继续调用toRaw方法直到找到原始值
   const rawTarget = toRaw(target)
+  // 键值也是如初处理，获取原始的键值
   const rawKey = toRaw(key)
   if (!isReadonly) {
+    // 不是只读的情况下需要跟踪
     if (hasChanged(key, rawKey)) {
+      // 键值变化，也需要跟踪
       track(rawTarget, TrackOpTypes.GET, key)
     }
     track(rawTarget, TrackOpTypes.GET, rawKey)
   }
+  // 获取原始 has 的方法
   const { has } = getProto(rawTarget)
+  // 包装层
   const wrap = isShallow ? toShallow : isReadonly ? toReadonly : toReactive
+  // 通过call方法调用has方法，判断是否存在键值，key 可能也是响应式的
   if (has.call(rawTarget, key)) {
+    // 存在则返回包装后的值
+    // target.get(key) 是Map， WeakMap 的原始方法
     return wrap(target.get(key))
   } else if (has.call(rawTarget, rawKey)) {
+    // 这里是key值不是响应式的情况，存在则返回包装后的值
     return wrap(target.get(rawKey))
   } else if (target !== rawTarget) {
     // #3602 readonly(reactive(Map))
@@ -51,6 +70,15 @@ function get(
   }
 }
 
+/**
+ * Set / Map / WeakSet / WeakMap .has 方法处理
+ * has 操作也需要跟踪，收集依赖后返回源集合的has方法    
+ * isReadonly == true 的情况下，不收集依赖
+ * @param this 
+ * @param key 
+ * @param isReadonly 
+ * @returns 
+ */
 function has(this: CollectionTypes, key: unknown, isReadonly = false): boolean {
   const target = (this as any)[ReactiveFlags.RAW]
   const rawTarget = toRaw(target)
@@ -61,6 +89,7 @@ function has(this: CollectionTypes, key: unknown, isReadonly = false): boolean {
     }
     track(rawTarget, TrackOpTypes.HAS, rawKey)
   }
+  // 最终也是返回源集合的has方法
   return key === rawKey
     ? target.has(key)
     : target.has(key) || target.has(rawKey)
@@ -187,10 +216,12 @@ function createIterableMethod(
   ): Iterable & Iterator {
     const target = (this as any)[ReactiveFlags.RAW]
     const rawTarget = toRaw(target)
+    //  Map 对象
     const targetIsMap = isMap(rawTarget)
     const isPair =
       method === 'entries' || (method === Symbol.iterator && targetIsMap)
     const isKeyOnly = method === 'keys' && targetIsMap
+    // 原来内置的迭代器
     const innerIterator = target[method](...args)
     const wrap = isShallow ? toShallow : isReadonly ? toReadonly : toReactive
     !isReadonly &&
@@ -239,6 +270,10 @@ function createReadonlyMethod(type: TriggerOpTypes): Function {
 
 type Instrumentations = Record<string | symbol, Function | number>
 
+/**
+ * 生成集合类型【map, set,WeakMap, WeakSet】proxy handler
+ * @returns 
+ */
 function createInstrumentations() {
   const mutableInstrumentations: Instrumentations = {
     get(this: MapTypes, key: unknown) {
@@ -304,6 +339,7 @@ function createInstrumentations() {
     forEach: createForEach(true, true),
   }
 
+  // 迭代器方法处理
   const iteratorMethods = [
     'keys',
     'values',

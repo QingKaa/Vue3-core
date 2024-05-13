@@ -42,19 +42,6 @@
     "preinstall": "npx only-allow pnpm",
     "postinstall": "simple-git-hooks"
   },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged && pnpm check",
-    "commit-msg": "node scripts/verify-commit.js"
-  },
-  "lint-staged": {
-    "*.{js,json}": [
-      "prettier --write"
-    ],
-    "*.ts?(x)": [
-      "eslint --fix",
-      "prettier --parser=typescript --write"
-    ]
-  },
   "engines": {
     "node": ">=18.12.0"
   },
@@ -87,7 +74,6 @@
     "estree-walker": "^2.0.2",
     "execa": "^8.0.1",
     "jsdom": "^24.0.0",
-    "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "magic-string": "^0.30.8",
     "markdown-table": "^3.0.3",

@@ -25,8 +25,13 @@ export type DebuggerEventExtraInfo = {
 
 export let activeEffect: ReactiveEffect | undefined
 
+/**
+ * Reactive 的副作用对象
+ */
 export class ReactiveEffect<T = any> {
+  // 是否激活
   active = true
+  // 依赖列表
   deps: Dep[] = []
 
   /**
@@ -138,6 +143,7 @@ function triggerComputed(computed: ComputedRefImpl<any>) {
   return computed.value
 }
 
+// 清除effect
 function preCleanupEffect(effect: ReactiveEffect) {
   effect._trackId++
   effect._depsLength = 0
@@ -152,11 +158,16 @@ function postCleanupEffect(effect: ReactiveEffect) {
   }
 }
 
+// 解除依赖关系
 function cleanupDepEffect(dep: Dep, effect: ReactiveEffect) {
   const trackId = dep.get(effect)
+  // trackId存在并且不等于当前effect的trackId，说明依赖已经失效
   if (trackId !== undefined && effect._trackId !== trackId) {
+    // 解除依赖关系
     dep.delete(effect)
     if (dep.size === 0) {
+      // 如果size === 0 说明已经没有其他依赖了，可以清除依赖
+      // dep.cleanup 从depsMap 中删除 调用的 dep
       dep.cleanup()
     }
   }
@@ -233,7 +244,9 @@ const trackStack: boolean[] = []
  * Temporarily pauses tracking.
  */
 export function pauseTracking() {
+  // 保存当前状态
   trackStack.push(shouldTrack)
+  // 设置新的状态
   shouldTrack = false
 }
 
@@ -249,7 +262,9 @@ export function enableTracking() {
  * Resets the previous global effect tracking state.
  */
 export function resetTracking() {
+  // 取出最后保存的状态
   const last = trackStack.pop()
+  // 恢复最后的状态
   shouldTrack = last === undefined ? true : last
 }
 
@@ -269,11 +284,14 @@ export function trackEffect(
   dep: Dep,
   debuggerEventExtraInfo?: DebuggerEventExtraInfo,
 ) {
+  // _trackId变化表示依赖关系有变化，需要清除旧的的依赖，重新添加新的依赖
   if (dep.get(effect) !== effect._trackId) {
+    // 更新依赖的 trackId
     dep.set(effect, effect._trackId)
+    // 获取旧的dep
     const oldDep = effect.deps[effect._depsLength]
-    if (oldDep !== dep) {
-      if (oldDep) {
+    if (oldDep) {
+        if (oldDep !== dep) {
         cleanupDepEffect(oldDep, effect)
       }
       effect.deps[effect._depsLength++] = dep

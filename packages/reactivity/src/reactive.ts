@@ -50,6 +50,7 @@ function targetTypeMap(rawType: string) {
 }
 
 function getTargetType(value: Target) {
+  // 如果目标带有__v_skip 标志或者 不可扩展，则返回无效，否则获取
   return value[ReactiveFlags.SKIP] || !Object.isExtensible(value)
     ? TargetType.INVALID
     : targetTypeMap(toRawType(value))
@@ -261,20 +262,25 @@ function createReactiveObject(
     return target
   }
   // target already has corresponding Proxy
+  // target 已经在proxyMap中，返回对应的 proxy
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {
     return existingProxy
   }
   // only specific value types can be observed.
+  // 有效类型才能观察
   const targetType = getTargetType(target)
   if (targetType === TargetType.INVALID) {
     return target
   }
+  // 创建 Proxy，根据不同类型传递不同的handlers
   const proxy = new Proxy(
     target,
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers,
   )
+  // 添加到proxyMap中
   proxyMap.set(target, proxy)
+  // 返回proxy对象
   return proxy
 }
 
