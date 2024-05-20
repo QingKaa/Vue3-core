@@ -70,7 +70,12 @@ function createArrayInstrumentations() {
   })
   // instrument length-altering mutation methods to avoid length being tracked
   // which leads to infinite loops in some cases (#2137)
-  // 以下操作会导致数据长度变化，在执行时候需要暂停跟踪状态，以防止长度变化再次触发跟踪形成死循环
+  // 以下操作会导致数据长度变化，在执行时候需要暂停跟踪状态，以防止长度变化再次触发跟踪形成死循环   
+  // 这些操作会在 内部会改动 length 属性的数组方法
+  // push执行流程：
+  // 1. 访问数组的 push 属性（getter）
+  // 2.访问数组的 length 属性（getter）
+  // 3.修改数组的 length 属性 +1（setter）
   ;(['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
     instrumentations[key] = function (this: unknown[], ...args: unknown[]) {
       pauseTracking()

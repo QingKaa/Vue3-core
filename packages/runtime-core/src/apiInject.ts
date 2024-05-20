@@ -1,3 +1,7 @@
+/**
+ * provide 与 Inject 
+ */
+
 import { isFunction } from '@vue/shared'
 import { currentInstance } from './component'
 import { currentRenderingInstance } from './componentRenderContext'
@@ -6,6 +10,11 @@ import { warn } from './warning'
 
 export interface InjectionKey<T> extends Symbol {}
 
+/**
+ * 将 key 与 value 保存到当前实例的 provides 中
+ * @param key 
+ * @param value 
+ */
 export function provide<T, K = InjectionKey<T> | string | number>(
   key: K,
   value: K extends InjectionKey<infer V> ? V : T,
@@ -52,6 +61,7 @@ export function inject(
   const instance = currentInstance || currentRenderingInstance
 
   // also support looking up from app-level provides w/ `app.runWithContext()`
+  // 处理注入到 app 中的依赖
   if (instance || currentApp) {
     // #2400
     // to support `app.use` plugins,
@@ -66,6 +76,7 @@ export function inject(
       // TS doesn't allow symbol as index type
       return provides[key as string]
     } else if (arguments.length > 1) {
+      // 默认值 
       return treatDefaultAsFactory && isFunction(defaultValue)
         ? defaultValue.call(instance && instance.proxy)
         : defaultValue

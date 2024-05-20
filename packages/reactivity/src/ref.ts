@@ -45,9 +45,13 @@ type RefBase<T> = {
   value: T
 }
 
+// 收集Ref的依赖
 export function trackRefValue(ref: RefBase<any>) {
   if (shouldTrack && activeEffect) {
+    // 获取 ref 的原始数据
+    // toRaw(ref) ：如果 ref.__v_raw 存在则递归调用toRaw(ref.__v_raw) ,直到找到原始数据
     ref = toRaw(ref)
+    // 收集副作用
     trackEffect(
       activeEffect,
       (ref.dep ??= createDep(
@@ -65,6 +69,7 @@ export function trackRefValue(ref: RefBase<any>) {
   }
 }
 
+// 触发Ref依赖
 export function triggerRefValue(
   ref: RefBase<any>,
   dirtyLevel: DirtyLevels = DirtyLevels.Dirty,
@@ -109,6 +114,7 @@ export function isRef(r: any): r is Ref {
 export function ref<T>(value: T): Ref<UnwrapRef<T>>
 export function ref<T = any>(): Ref<T | undefined>
 export function ref(value?: unknown) {
+  debugger
   return createRef(value, false)
 }
 

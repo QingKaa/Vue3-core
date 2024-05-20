@@ -53,7 +53,7 @@
 </div>
 
 <script>
-const { createApp, reactive, computed, watchEffect, onMounted, onUnmounted } = Vue
+const { createApp, reactive, computed, watchEffect, onMounted, onUnmounted, ref } = Vue
 
 const STORAGE_KEY = 'todos-vuejs-3.x'
 const todoStorage = {
@@ -92,6 +92,10 @@ function pluralize (n) {
 
 createApp({
   setup () {
+
+    const refItem = ref(null)
+    console.log('  =====> refItem:', refItem);
+
     const state = reactive({
       todos: todoStorage.fetch(),
       editedTodo: null,

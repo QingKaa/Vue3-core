@@ -94,6 +94,7 @@ export declare const ShallowReactiveMarker: unique symbol
 export type ShallowReactive<T> = T & { [ShallowReactiveMarker]?: true }
 
 /**
+ * 浅层响应式
  * Shallow version of {@link reactive()}.
  *
  * Unlike {@link reactive()}, there is no deep conversion: only root-level
@@ -160,6 +161,7 @@ export type DeepReadonly<T> = T extends Builtin
                     : Readonly<T>
 
 /**
+ * 创建只读响应式对象 
  * Takes an object (reactive or plain) or a ref and returns a readonly proxy to
  * the original.
  *
@@ -201,6 +203,7 @@ export function readonly<T extends object>(
 }
 
 /**
+ * 创建浅层响应式对象
  * Shallow version of {@link readonly()}.
  *
  * Unlike {@link readonly()}, there is no deep conversion: only root-level
@@ -240,6 +243,15 @@ export function shallowReadonly<T extends object>(target: T): Readonly<T> {
   )
 }
 
+/**
+ * 创建响应式对象
+ * @param target 
+ * @param isReadonly 
+ * @param baseHandlers 
+ * @param collectionHandlers 
+ * @param proxyMap 
+ * @returns 
+ */
 function createReactiveObject(
   target: Target,
   isReadonly: boolean,
@@ -285,6 +297,9 @@ function createReactiveObject(
 }
 
 /**
+ * 判断对象是否为响应式对象：   
+ * 如果是只读对象响应式对象，则递归判断 __v_raw 属性是否为响应对象    
+ * 否则，判断 __v_isReactive 是否为真
  * Checks if an object is a proxy created by {@link reactive()} or
  * {@link shallowReactive()} (or {@link ref()} in some cases).
  *
@@ -310,6 +325,7 @@ export function isReactive(value: unknown): boolean {
 }
 
 /**
+ * 判断对象是否为只读响应式对象，依据 __v_isReadonly 为真
  * Checks whether the passed value is a readonly object. The properties of a
  * readonly object can change, but they can't be assigned directly via the
  * passed object.
@@ -324,11 +340,17 @@ export function isReadonly(value: unknown): boolean {
   return !!(value && (value as Target)[ReactiveFlags.IS_READONLY])
 }
 
+/**
+ * 判断是否为浅响应对象，依据 __v_isShallow 属性是否为真
+ * @param value 
+ * @returns 
+ */
 export function isShallow(value: unknown): boolean {
   return !!(value && (value as Target)[ReactiveFlags.IS_SHALLOW])
 }
 
 /**
+ * 判断对象是否为响应式对象 ，参数存在并且 __v_raw 属性存在
  * Checks if an object is a proxy created by {@link reactive},
  * {@link readonly}, {@link shallowReactive} or {@link shallowReadonly()}.
  *
@@ -370,6 +392,7 @@ export function toRaw<T>(observed: T): T {
 export type Raw<T> = T & { [RawSymbol]?: true }
 
 /**
+ * 标记对象 "__v_skip" 为true， 在代理时候跳过
  * Marks an object so that it will never be converted to a proxy. Returns the
  * object itself.
  *
@@ -399,6 +422,7 @@ export function markRaw<T extends object>(value: T): Raw<T> {
 }
 
 /**
+ * 将对象转换成proxy代理对象    
  * Returns a reactive proxy of the given value (if possible).
  *
  * If the given value is not an object, the original value itself is returned.
@@ -409,6 +433,7 @@ export const toReactive = <T extends unknown>(value: T): T =>
   isObject(value) ? reactive(value) : value
 
 /**
+ * 将对象转换成只读代理对象   
  * Returns a readonly proxy of the given value (if possible).
  *
  * If the given value is not an object, the original value itself is returned.

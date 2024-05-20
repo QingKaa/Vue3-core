@@ -1,0 +1,26 @@
+<script src="../../dist/vue.global.js"></script>
+<link rel="stylesheet" href="../../../../node_modules/todomvc-app-css/index.css">
+
+<div id="app">
+    <p>{{ refItem }}</p>
+
+</div>
+
+<script>
+    const { createApp, reactive, computed, watchEffect, onMounted, onUnmounted, ref } = Vue
+
+    const STORAGE_KEY = 'todos-vuejs-3.x'
+
+    createApp({
+        setup() {
+            const refItem = ref('msg')
+            debugger
+            console.log('  =====> refItem:', refItem);
+
+            return {
+                refItem
+            }
+        },
+
+    }).mount('#app')
+</script>
