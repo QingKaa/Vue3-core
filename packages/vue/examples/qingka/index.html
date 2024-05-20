@@ -6,12 +6,14 @@
 
 </div>
 
-<script>
+<script setup>
     const { createApp, reactive, computed, watchEffect, onMounted, onUnmounted, ref } = Vue
 
     const STORAGE_KEY = 'todos-vuejs-3.x'
 
+
     createApp({
+        props:['a', 'b'],
         setup() {
             const refItem = ref('msg')
             debugger
